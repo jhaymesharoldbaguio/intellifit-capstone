@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliFit - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+    <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
+        <h1 class="text-4xl font-extrabold text-blue-500 text-center mb-2 tracking-tighter italic">INTELLIFIT</h1>
+        <p class="text-center text-gray-500 text-xs uppercase mb-8">Varsity Access Point</p>
+
+        <div class="space-y-4">
+            <input type="email" id="email" placeholder="SPCBA Email" class="w-full p-4 bg-gray-700 rounded-xl border border-gray-600 outline-none focus:border-blue-500">
+            <input type="password" id="password" placeholder="Password" class="w-full p-4 bg-gray-700 rounded-xl border border-gray-600 outline-none focus:border-blue-500">
+            <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-700 p-4 rounded-xl font-bold transition-all shadow-lg active:scale-95">LOGIN</button>
+        </div>
+
+        <p id="msg" class="text-center mt-4 text-sm"></p>
+        
+        <div class="mt-6 text-center">
+            <a href="/" class="text-blue-400 text-sm hover:underline">New Varsity? Register here</a>
+        </div>
+    </div>
+
+    <script>
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const msg = document.getElementById('msg');
+            
+            msg.innerText = "Checking credentials...";
+
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                window.location.href = `/dashboard/${result.uid}`;
+            } else {
+                msg.innerText = "Error: " + result.error;
+                msg.className = "text-center mt-4 text-red-500 text-sm";
+            }
+        }
+    </script>
+</body>
+</html>

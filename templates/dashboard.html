@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliFit Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white p-6 pb-24">
+
+    <!-- 1. WELCOME SECTION -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold italic">INTELLI<span class="text-blue-500">FIT</span></h1>
+        <p class="text-gray-400">Welcome back, <span class="text-white font-bold">{{ user.name }}</span>!</p>
+    </div>
+
+    <!-- 2. STATS OVERVIEW -->
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="bg-gray-800 p-4 rounded-2xl border border-gray-700 shadow-lg">
+            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Sport</p>
+            <p class="text-blue-400 font-bold">{{ user.sport }}</p>
+        </div>
+        <div class="bg-gray-800 p-4 rounded-2xl border border-gray-700 shadow-lg">
+            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Goal</p>
+            <p class="text-green-400 font-bold">{{ user.goal }}</p>
+        </div>
+    </div>
+
+    <!-- 3. AI COACH TRIGGER -->
+    <div class="bg-gradient-to-br from-blue-900 to-gray-800 p-6 rounded-3xl border border-blue-500 shadow-xl mb-8">
+        <h2 class="text-xl font-bold mb-2 flex items-center">🤖 AI Coach</h2>
+        <p class="text-sm text-gray-300 mb-4 italic">Ready to work on your <span class="text-white font-bold">{{ user.goal }}</span> today?</p>
+        <button onclick="fetchWorkouts()" class="w-full bg-blue-600 hover:bg-blue-500 p-4 rounded-xl font-bold shadow-lg transition-all active:scale-95">
+            Generate Today's Drills
+        </button>
+    </div>
+
+    <!-- 4. WORKOUT CONTAINER (Dito lalabas ang drills) -->
+    <div id="workout-container" class="space-y-4">
+        <!-- Drills will appear here via JavaScript -->
+    </div>
+
+    <!-- 5. UPDATED BOTTOM NAVIGATION (Functional Links) -->
+    <div class="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-md p-4 flex justify-around border-t border-gray-700">
+        <!-- HOME: Reloads current dashboard -->
+        <button onclick="window.location.href='/dashboard/{{ uid }}'" class="text-blue-500 font-bold flex flex-col items-center text-xs">
+            <span class="text-xl">🏠</span>
+            <span>Home</span>
+        </button>
+
+        <!-- HISTORY: Papunta sa training history page -->
+        <button onclick="window.location.href='/history/{{ uid }}'" class="text-gray-500 hover:text-blue-400 flex flex-col items-center text-xs transition">
+            <span class="text-xl">🕒</span>
+            <span>History</span>
+        </button>
+
+        <!-- PROFILE: Papunta sa Profile Setup kung gusto palitan ang sport/goal -->
+        <button onclick="window.location.href='/profile/{{ uid }}'" class="text-gray-500 hover:text-blue-400 flex flex-col items-center text-xs transition">
+            <span class="text-xl">👤</span>
+            <span>Profile</span>
+        </button>
+    </div>
+
+    <!-- 6. JAVASCRIPT LOGIC -->
+    <script>
+        // Function para kuhanin ang recommended drills mula sa AI
+        async function fetchWorkouts() {
+            const container = document.getElementById('workout-container');
+            const uid = "{{ uid }}";
+            
+            container.innerHTML = "<p class='text-center text-blue-400 animate-pulse mt-4'>AI is analyzing drills...</p>";
+
+            try {
+                const response = await fetch(`/get_recommendation/${uid}`);
+                const drills = await response.json();
+
+                container.innerHTML = "<h3 class='text-lg font-bold mb-4 text-blue-400 uppercase tracking-widest text-xs'>Today's Focus:</h3>";
+
+                drills.forEach((drill, index) => {
+                    container.innerHTML += `
+                        <div id="drill-card-${index}" class="bg-gray-800 p-5 rounded-2xl border-l-4 border-blue-500 shadow-md mb-4 transition-all">
+                            <h4 class="font-bold text-lg text-white">${drill.name}</h4>
+                            <p class="text-green-400 text-xs font-bold mb-2 italic">${drill.reps}</p>
+                            <p class="text-gray-400 text-sm mb-4 leading-relaxed">${drill.desc}</p>
+                            
+                            <button onclick="markDone('${drill.name}', ${index})" 
+                                id="btn-${index}"
+                                class="bg-blue-900/30 text-blue-400 hover:bg-green-600 hover:text-white border border-blue-500/30 py-2 px-6 rounded-lg transition-all font-bold text-xs">
+                                Mark as Finished
+                            </button>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                container.innerHTML = "<p class='text-red-500 text-sm text-center font-bold'>Error loading drills. Try again.</p>";
+            }
+        }
+
+        // Function para i-save sa database ang natapos na drill
+        async function markDone(drillName, index) {
+            const uid = "{{ uid }}";
+            const btn = document.getElementById(`btn-${index}`);
+            const card = document.getElementById(`drill-card-${index}`);
+
+            try {
+                const response = await fetch('/log_workout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: uid, drill_name: drillName })
+                });
+
+                if (response.ok) {
+                    // Visual Feedback pagkatapos i-log
+                    btn.innerText = "✅ Completed";
+                    btn.disabled = true;
+                    btn.className = "bg-green-700 text-white text-xs py-2 px-6 rounded-lg font-bold cursor-not-allowed";
+                    card.classList.add("opacity-40"); // Malabo na para alam na tapos na
+                }
+            } catch (err) {
+                alert("Connection failed. Check Termux.");
+            }
+        }
+    </script>
+</body>
+</html>

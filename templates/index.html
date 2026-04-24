@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliFit - Varsity Registration</title>
+    <!-- Gagamit tayo ng Tailwind CSS para sa modern at mobile-responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main Container ng Registration Card -->
+    <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
+        
+        <!-- Header Section -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-blue-500 tracking-tight">INTELLIFIT</h1>
+            <p class="text-gray-400 mt-2 text-sm uppercase tracking-widest">SPCBA Varsity System</p>
+        </div>
+
+        <!-- Input Fields Section -->
+        <div class="space-y-4" id="auth-form">
+            <!-- Full Name Input -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase ml-1 mb-1">Full Name</label>
+                <input type="text" id="name" placeholder="Juan Dela Cruz" 
+                    class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+            </div>
+
+            <!-- Email Input -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase ml-1 mb-1">SPCBA Email</label>
+                <input type="email" id="email" placeholder="juan.delacruz@spcba.edu.ph" 
+                    class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+            </div>
+
+            <!-- Password Input -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase ml-1 mb-1">Password</label>
+                <input type="password" id="password" placeholder="••••••••" 
+                    class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+            </div>
+            
+            <!-- Submit Button -->
+            <button onclick="handleRegister()" 
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl font-bold text-lg shadow-lg transform active:scale-95 transition-all mt-4">
+                Sign Up as Varsity
+            </button>
+        </div>
+
+        <!-- Message Display: Dito lalabas ang Success o Error messages -->
+        <p id="message" class="mt-6 text-center text-sm font-medium min-h-[20px]"></p>
+        
+        <!-- Footer link (Optional: Para sa Login soon) -->
+        <div class="mt-8 text-center border-t border-gray-700 pt-6">
+            <p class="text-gray-500 text-xs">By signing up, you agree to follow the varsity training protocols.</p>
+        </div>
+    </div>
+
+    <!-- Logic Section (JavaScript) -->
+    <script>
+        async function handleRegister() {
+            // 1. Kunin ang values mula sa input fields
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageElement = document.getElementById('message');
+
+            // Validation check: Siguraduhin na hindi empty ang fields
+            if(!name || !email || !password) {
+                messageElement.className = "mt-4 text-center text-yellow-500";
+                messageElement.innerText = "Please fill in all fields.";
+                return;
+            }
+
+            try {
+                // 2. I-send ang data sa Python Backend (/register route)
+                messageElement.className = "mt-4 text-center text-blue-400";
+                messageElement.innerText = "Creating account...";
+
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const result = await response.json();
+
+                // 3. I-handle ang response mula sa server
+                if (response.ok) {
+                    // SUCCESS: Account created
+                    messageElement.className = "mt-4 text-center text-green-500 font-bold";
+                    messageElement.innerText = "Account Created! Redirecting to Profile Setup...";
+
+                    // STEP 3 LOGIC: Mag-redirect sa Profile Page pagkatapos ng 2 seconds
+                    // Gagamitin natin yung UID na nanggaling sa backend para malaman kung kaninong profile ang i-uupdate
+                    setTimeout(() => {
+                        window.location.href = `/profile/${result.uid}`;
+                    }, 2000);
+
+                } else {
+                    // ERROR: May mali (halimbawa: registered na yung email)
+                    messageElement.className = "mt-4 text-center text-red-500";
+                    messageElement.innerText = "Error: " + result.error;
+                }
+            } catch (error) {
+                // DEBUG: Para malaman kung hindi makakonekta sa backend
+                console.error("Fetch Error:", error);
+                messageElement.className = "mt-4 text-center text-red-500";
+                messageElement.innerText = "Connection failed. Is the server running?";
+            }
+        }
+    </script>
+</body>
+</html>

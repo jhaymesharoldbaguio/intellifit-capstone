@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliFit - Athlete Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700">
+        <h2 class="text-3xl font-bold text-blue-500 mb-2 text-center italic">ATHLETE PROFILE</h2>
+        <p class="text-gray-400 text-center text-sm mb-8 uppercase tracking-widest text-xs">Setup your physical stats</p>
+        
+        <div class="space-y-5">
+            <!-- Sport Selection -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase ml-1 mb-1">Varsity Sport</label>
+                <select id="sport" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 outline-none">
+                    <option value="Basketball">Basketball</option>
+                    <option value="Volleyball">Volleyball</option>
+                </select>
+            </div>
+
+            <!-- Physicals -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase ml-1 mb-1">Height (cm)</label>
+                    <input type="number" id="height" placeholder="175" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase ml-1 mb-1">Weight (kg)</label>
+                    <input type="number" id="weight" placeholder="70" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <!-- Training Goal -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase ml-1 mb-1">Training Focus</label>
+                <select id="goal" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 outline-none">
+                    <option value="Strength">Increase Strength</option>
+                    <option value="Endurance">Improve Endurance</option>
+                    <option value="Explosiveness">Explosive Power</option>
+                </select>
+            </div>
+
+            <!-- Submit Button (Double check the onclick name) -->
+            <button type="button" onclick="saveProfileData()" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl font-bold text-lg shadow-lg transform active:scale-95 transition-all mt-6">
+                Complete Setup
+            </button>
+            
+            <p id="profile-message" class="text-center text-sm mt-4 min-h-[20px] font-medium"></p>
+        </div>
+    </div>
+
+    <script>
+        // Kunin ang UID mula sa Flask
+        const user_id = "{{ uid }}";
+
+        async function saveProfileData() {
+            const msg = document.getElementById('profile-message');
+            
+            // Kunin ang input values
+            const sport = document.getElementById('sport').value;
+            const height = document.getElementById('height').value;
+            const weight = document.getElementById('weight').value;
+            const goal = document.getElementById('goal').value;
+
+            // Simple Validation
+            if(!height || !weight) {
+                msg.innerText = "⚠️ Please enter height and weight!";
+                msg.className = "text-center text-yellow-500 text-sm mt-4";
+                return;
+            }
+
+            msg.innerText = "⏳ Saving profile...";
+            msg.className = "text-center text-blue-400 text-sm mt-4";
+
+            try {
+                const response = await fetch('/update_profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        uid: user_id,
+                        sport: sport,
+                        height: height,
+                        weight: weight,
+                        goal: goal
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    msg.innerText = "✅ Success! Redirecting to Dashboard...";
+                    msg.className = "text-center text-green-500 text-sm mt-4 font-bold";
+                    
+                    setTimeout(() => {
+                        window.location.href = "/dashboard/" + user_id;
+                    }, 1500);
+                } else {
+                    msg.innerText = "❌ Error: " + (result.error || "Unknown error");
+                    msg.className = "text-center text-red-500 text-sm mt-4";
+                }
+            } catch (err) {
+                console.error("Fetch error:", err);
+                msg.innerText = "❌ Connection failed. Check Termux.";
+                msg.className = "text-center text-red-500 text-sm mt-4";
+            }
+        }
+    </script>
+</body>
+</html>
