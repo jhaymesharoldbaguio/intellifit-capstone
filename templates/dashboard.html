@@ -6,119 +6,142 @@
     <title>IntelliFit Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white p-6 pb-24">
+<body class="bg-gray-900 text-white p-6 pb-28 font-sans">
 
-    <!-- 1. WELCOME SECTION -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold italic">INTELLI<span class="text-blue-500">FIT</span></h1>
-        <p class="text-gray-400">Welcome back, <span class="text-white font-bold">{{ user.name }}</span>!</p>
-    </div>
-
-    <!-- 2. STATS OVERVIEW -->
-    <div class="grid grid-cols-2 gap-4 mb-8">
-        <div class="bg-gray-800 p-4 rounded-2xl border border-gray-700 shadow-lg">
-            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Sport</p>
-            <p class="text-blue-400 font-bold">{{ user.sport }}</p>
+    <!-- 1. HEADER -->
+    <div class="flex justify-between items-center mb-8 mt-2">
+        <div>
+            <h1 class="text-3xl font-black italic uppercase text-white leading-none">INTELLI<span class="text-blue-500">FIT</span></h1>
+            <p class="text-gray-500 text-[10px] font-bold tracking-[0.3em]">Varsity Edition</p>
         </div>
-        <div class="bg-gray-800 p-4 rounded-2xl border border-gray-700 shadow-lg">
-            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Goal</p>
-            <p class="text-green-400 font-bold">{{ user.goal }}</p>
+        <button onclick="window.location.href='/login_page'" class="bg-gray-800 p-3 rounded-2xl border border-gray-700 shadow-lg active:scale-90 transition-all text-xl">🚪</button>
+    </div>
+
+    <!-- 2. AI HEALTH CARD (BMI) -->
+    <div class="bg-gray-800 rounded-[2rem] p-6 mb-6 border border-gray-700 shadow-2xl relative overflow-hidden">
+        <div class="flex justify-between items-start mb-4 relative z-10">
+            <div>
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Athlete Health Score</p>
+                <div class="flex items-baseline space-x-2">
+                    <h2 class="text-5xl font-black {{ color_class }}">{{ bmi }}</h2>
+                    <span class="text-gray-500 text-sm font-bold uppercase">BMI</span>
+                </div>
+            </div>
+            <span class="bg-blue-900/40 text-blue-400 text-[10px] px-4 py-1.5 rounded-full font-black border border-blue-500/30 uppercase tracking-tighter">{{ user.sport }}</span>
         </div>
+        <p class="text-xs font-bold {{ color_class }} uppercase tracking-tighter">Status: {{ bmi_status }}</p>
+        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-blue-600/5 rounded-full"></div>
     </div>
 
-    <!-- 3. AI COACH TRIGGER -->
-    <div class="bg-gradient-to-br from-blue-900 to-gray-800 p-6 rounded-3xl border border-blue-500 shadow-xl mb-8">
-        <h2 class="text-xl font-bold mb-2 flex items-center">🤖 AI Coach</h2>
-        <p class="text-sm text-gray-300 mb-4 italic">Ready to work on your <span class="text-white font-bold">{{ user.goal }}</span> today?</p>
-        <button onclick="fetchWorkouts()" class="w-full bg-blue-600 hover:bg-blue-500 p-4 rounded-xl font-bold shadow-lg transition-all active:scale-95">
-            Generate Today's Drills
-        </button>
+    <!-- 3. PROGRESS RING BOX -->
+    <div class="bg-gray-800 rounded-[2rem] p-5 mb-6 border border-gray-700 shadow-xl flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <div class="relative flex items-center justify-center">
+                <svg class="w-16 h-16 transform -rotate-90">
+                    <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="5" fill="transparent" class="text-gray-700" />
+                    <circle id="progress-ring" cx="32" cy="32" r="28" stroke="currentColor" stroke-width="5" fill="transparent" 
+                        stroke-dasharray="175.9" stroke-dashoffset="{{ 175.9 - (progress * 15) if (175.9 - (progress * 15)) > 0 else 0 }}" 
+                        class="text-green-500 transition-all duration-1000" />
+                </svg>
+                <span id="progress-count" class="absolute text-sm font-black">{{ progress }}</span>
+            </div>
+            <div>
+                <h3 class="font-black text-sm italic uppercase tracking-tighter">Discipline Score</h3>
+                <p class="text-gray-500 text-[10px] font-medium">{{ progress }} drills completed</p>
+            </div>
+        </div>
+        <button onclick="window.location.href='/history/{{ uid }}'" class="text-blue-500 font-black text-[10px] uppercase hover:underline">History</button>
     </div>
 
-    <!-- 4. WORKOUT CONTAINER (Dito lalabas ang drills) -->
-    <div id="workout-container" class="space-y-4">
-        <!-- Drills will appear here via JavaScript -->
+    <!-- 4. COACH'S QUOTE -->
+    <div class="mb-10 px-4 text-center">
+        <p class="text-gray-500 text-[9px] font-black uppercase tracking-[0.3em] mb-2">Coach's Word of the Day</p>
+        <p class="text-white text-sm italic font-serif leading-relaxed px-4">"{{ quote }}"</p>
     </div>
 
-    <!-- 5. UPDATED BOTTOM NAVIGATION (Functional Links) -->
-    <div class="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-md p-4 flex justify-around border-t border-gray-700">
-        <!-- HOME: Reloads current dashboard -->
-        <button onclick="window.location.href='/dashboard/{{ uid }}'" class="text-blue-500 font-bold flex flex-col items-center text-xs">
-            <span class="text-xl">🏠</span>
-            <span>Home</span>
-        </button>
-
-        <!-- HISTORY: Papunta sa training history page -->
-        <button onclick="window.location.href='/history/{{ uid }}'" class="text-gray-500 hover:text-blue-400 flex flex-col items-center text-xs transition">
-            <span class="text-xl">🕒</span>
-            <span>History</span>
-        </button>
-
-        <!-- PROFILE: Papunta sa Profile Setup kung gusto palitan ang sport/goal -->
-        <button onclick="window.location.href='/profile/{{ uid }}'" class="text-gray-500 hover:text-blue-400 flex flex-col items-center text-xs transition">
-            <span class="text-xl">👤</span>
-            <span>Profile</span>
-        </button>
+    <!-- 5. AI WORKOUT BUTTON -->
+    <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-[2.5rem] p-7 mb-8 shadow-2xl relative overflow-hidden active:scale-95 transition-all">
+        <div class="relative z-10 text-center">
+            <h2 class="text-2xl font-black mb-6 italic">READY TO TRAIN?</h2>
+            <button onclick="fetchWorkouts()" class="bg-white text-blue-600 w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl">START AI SESSION</button>
+        </div>
+        <div class="absolute -right-5 -top-5 w-24 h-24 bg-white/10 rounded-full"></div>
     </div>
 
-    <!-- 6. JAVASCRIPT LOGIC -->
+    <!-- 6. WORKOUT CONTAINER -->
+    <div id="workout-container" class="space-y-4"></div>
+
+    <!-- 7. BOTTOM NAV -->
+    <div class="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-xl p-5 flex justify-around border-t border-gray-800 z-50">
+        <button onclick="window.location.href='/dashboard/{{ uid }}'" class="text-blue-500 font-black flex flex-col items-center text-[9px] tracking-widest"><span>🏠</span>HOME</button>
+        <button onclick="window.location.href='/history/{{ uid }}'" class="text-gray-500 font-black flex flex-col items-center text-[9px] tracking-widest"><span>🕒</span>HISTORY</button>
+        <button onclick="window.location.href='/profile_view/{{ uid }}'" class="text-gray-500 font-black flex flex-col items-center text-[9px] tracking-widest"><span>👤</span>PROFILE</button>
+    </div>
+
     <script>
-        // Function para kuhanin ang recommended drills mula sa AI
+        let currentProgress = {{ progress }};
+
         async function fetchWorkouts() {
             const container = document.getElementById('workout-container');
-            const uid = "{{ uid }}";
-            
-            container.innerHTML = "<p class='text-center text-blue-400 animate-pulse mt-4'>AI is analyzing drills...</p>";
+            container.innerHTML = `<div class='text-center py-12'><p class='text-blue-400 animate-pulse font-black text-xs tracking-widest uppercase'>🤖 AI Analyzing your stats...</p></div>`;
 
             try {
-                const response = await fetch(`/get_recommendation/${uid}`);
+                const response = await fetch(`/get_recommendation/{{ uid }}`);
                 const drills = await response.json();
-
-                container.innerHTML = "<h3 class='text-lg font-bold mb-4 text-blue-400 uppercase tracking-widest text-xs'>Today's Focus:</h3>";
+                container.innerHTML = `<h3 class='text-[10px] font-black mb-4 text-gray-500 uppercase tracking-[0.3em]'>Personalized Drills</h3>`;
 
                 drills.forEach((drill, index) => {
+                    // DYNAMIC PROXY LOADING (Weserv + Unsplash)
+                    // Mas mabilis ito mag-load at hindi naba-block
+                    const imageUrl = `https://images.weserv.nl/?url=https://images.unsplash.com/photo-${drill.image}&w=400&h=300&fit=cover`;
+                    
                     container.innerHTML += `
-                        <div id="drill-card-${index}" class="bg-gray-800 p-5 rounded-2xl border-l-4 border-blue-500 shadow-md mb-4 transition-all">
-                            <h4 class="font-bold text-lg text-white">${drill.name}</h4>
-                            <p class="text-green-400 text-xs font-bold mb-2 italic">${drill.reps}</p>
-                            <p class="text-gray-400 text-sm mb-4 leading-relaxed">${drill.desc}</p>
-                            
-                            <button onclick="markDone('${drill.name}', ${index})" 
-                                id="btn-${index}"
-                                class="bg-blue-900/30 text-blue-400 hover:bg-green-600 hover:text-white border border-blue-500/30 py-2 px-6 rounded-lg transition-all font-bold text-xs">
-                                Mark as Finished
-                            </button>
+                        <div id="drill-card-${index}" class="bg-gray-800 p-6 rounded-[2rem] border-l-[6px] border-blue-500 shadow-xl mb-6 transform transition-all duration-500">
+                            <div class="w-full h-44 bg-gray-700 rounded-2xl mb-4 overflow-hidden border border-gray-600 shadow-inner">
+                                <img src="${imageUrl}" 
+                                     alt="${drill.name}" 
+                                     class="w-full h-full object-cover"
+                                     onerror="this.src='https://placehold.co/400x300/1f2937/3b82f6?text=Ready+to+Train'">
+                            </div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-black text-xl text-white italic uppercase tracking-tighter">${drill.name}</h4>
+                                <span class="bg-green-900/30 text-green-400 text-[9px] px-3 py-1 rounded-lg font-black border border-green-500/20">${drill.reps}</span>
+                            </div>
+                            <p class="text-gray-400 text-xs mb-6 font-medium leading-relaxed">${drill.desc}</p>
+                            <button onclick="markDone('${drill.name}', ${index})" id="btn-${index}" class="w-full bg-blue-900/30 text-blue-400 border border-blue-500/20 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95">Mark as Finished</button>
                         </div>
                     `;
                 });
-            } catch (err) {
-                container.innerHTML = "<p class='text-red-500 text-sm text-center font-bold'>Error loading drills. Try again.</p>";
+            } catch (err) { 
+                container.innerHTML = "<p class='text-red-500 text-xs text-center font-bold'>Connection Error. Check Termux.</p>";
             }
         }
 
-        // Function para i-save sa database ang natapos na drill
         async function markDone(drillName, index) {
-            const uid = "{{ uid }}";
             const btn = document.getElementById(`btn-${index}`);
             const card = document.getElementById(`drill-card-${index}`);
+            btn.innerText = "⏳ SAVING...";
+            btn.disabled = true;
 
             try {
                 const response = await fetch('/log_workout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uid: uid, drill_name: drillName })
+                    body: JSON.stringify({ uid: "{{ uid }}", drill_name: drillName })
                 });
 
                 if (response.ok) {
-                    // Visual Feedback pagkatapos i-log
-                    btn.innerText = "✅ Completed";
-                    btn.disabled = true;
-                    btn.className = "bg-green-700 text-white text-xs py-2 px-6 rounded-lg font-bold cursor-not-allowed";
-                    card.classList.add("opacity-40"); // Malabo na para alam na tapos na
+                    setTimeout(() => {
+                        btn.innerText = "✅ COMPLETED";
+                        btn.className = "w-full bg-green-700 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest cursor-not-allowed";
+                        card.classList.add("opacity-40", "scale-95");
+                        currentProgress += 1;
+                        document.getElementById('progress-count').innerText = currentProgress;
+                        const newOffset = 175.9 - (currentProgress * 15);
+                        document.getElementById('progress-ring').style.strokeDashoffset = newOffset < 0 ? 0 : newOffset;
+                    }, 600);
                 }
-            } catch (err) {
-                alert("Connection failed. Check Termux.");
-            }
+            } catch (err) { alert("Network error."); }
         }
     </script>
 </body>
