@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliFit - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <!-- LOGIN CARD -->
+    <div class="bg-gray-800 p-8 rounded-[2rem] shadow-2xl w-full max-w-md border border-gray-700">
+        
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-black italic text-blue-500 tracking-tighter">INTELLIFIT</h1>
+            <p class="text-gray-500 text-xs uppercase font-bold tracking-widest mt-1">Varsity Access</p>
+        </div>
+
+        <div class="space-y-4">
+            <!-- Email Input -->
+            <div>
+                <label class="text-[10px] font-bold text-gray-500 uppercase ml-2 mb-1 block">SPCBA Email</label>
+                <input type="email" id="email" placeholder="name@spcba.edu.ph" 
+                    class="w-full p-4 bg-gray-700 rounded-2xl border border-gray-600 focus:outline-none focus:border-blue-500 transition-all text-sm font-medium">
+            </div>
+
+            <!-- Password Input -->
+            <div>
+                <label class="text-[10px] font-bold text-gray-500 uppercase ml-2 mb-1 block">Password</label>
+                <input type="password" id="password" placeholder="••••••••" 
+                    class="w-full p-4 bg-gray-700 rounded-2xl border border-gray-600 focus:outline-none focus:border-blue-500 transition-all text-sm font-medium">
+            </div>
+            
+            <button onclick="handleLogin()" 
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-2xl font-black text-sm tracking-widest shadow-lg active:scale-95 transition-all mt-4 uppercase">
+                Login Account
+            </button>
+        </div>
+
+        <!-- Message Display -->
+        <p id="message" class="mt-6 text-center text-xs font-bold min-h-[1.5rem]"></p>
+        
+        <!-- Link to Register -->
+        <div class="mt-8 text-center border-t border-gray-700 pt-6">
+            <p class="text-gray-500 text-xs">New Varsity Player? 
+                <a href="/" class="text-blue-500 font-bold hover:underline">Register Here</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 1. AUTO-LOGIN CHECK: Kung naka-login na, huwag nang ipakita ang form, dideretso na sa Dashboard.
+        window.onload = function() {
+            const savedUID = localStorage.getItem('intellifit_uid');
+            if (savedUID && savedUID !== "None" && savedUID !== "") {
+                window.location.href = "/dashboard/" + savedUID;
+            }
+        };
+
+        // 2. LOGIN FUNCTION: Tumatawag sa Python Backend
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const msg = document.getElementById('message');
+
+            if (!email || !password) {
+                msg.innerText = "⚠️ Please enter email and password.";
+                msg.className = "mt-6 text-center text-yellow-500 text-xs font-bold";
+                return;
+            }
+
+            msg.innerText = "⏳ Verifying account...";
+            msg.className = "mt-6 text-center text-blue-400 text-xs font-bold animate-pulse";
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    msg.innerText = "✅ Login Success! Redirecting...";
+                    msg.className = "mt-6 text-center text-green-500 text-xs font-bold";
+                    
+                    // SAVE SESSION: Importante ito para sa Persistence
+                    localStorage.setItem('intellifit_uid', result.uid);
+                    
+                    setTimeout(() => {
+                        window.location.href = "/dashboard/" + result.uid;
+                    }, 1500);
+                } else {
+                    msg.innerText = "❌ " + (result.error || "Login Failed");
+                    msg.className = "mt-6 text-center text-red-500 text-xs font-bold";
+                }
+            } catch (error) {
+                msg.innerText = "❌ Connection error. Is Termux running?";
+                msg.className = "mt-6 text-center text-red-500 text-xs font-bold";
+            }
+        }
+    </script>
+</body>
+</html>

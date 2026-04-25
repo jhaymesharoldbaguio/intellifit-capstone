@@ -8,13 +8,18 @@
 </head>
 <body class="bg-gray-900 text-white p-6 pb-28 font-sans">
 
-    <!-- 1. HEADER -->
+    <!-- 1. HEADER SECTION -->
     <div class="flex justify-between items-center mb-8 mt-2">
         <div>
-            <h1 class="text-3xl font-black italic uppercase text-white leading-none">INTELLI<span class="text-blue-500">FIT</span></h1>
-            <p class="text-gray-500 text-[10px] font-bold tracking-[0.3em]">Varsity Edition</p>
+            <h1 class="text-3xl font-black italic uppercase text-white leading-none">
+                INTELLI<span class="text-blue-500">FIT</span>
+            </h1>
+            <p class="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Varsity Edition</p>
         </div>
-        <button onclick="window.location.href='/login_page'" class="bg-gray-800 p-3 rounded-2xl border border-gray-700 shadow-lg active:scale-90 transition-all text-xl">🚪</button>
+        <!-- Logout Button using the logout() function -->
+        <button onclick="logout()" class="bg-gray-800 p-3 rounded-2xl border border-gray-700 shadow-lg active:scale-90 transition-all text-xl">
+            🚪
+        </button>
     </div>
 
     <!-- 2. AI HEALTH CARD (BMI) -->
@@ -30,24 +35,24 @@
             <span class="bg-blue-900/40 text-blue-400 text-[10px] px-4 py-1.5 rounded-full font-black border border-blue-500/30 uppercase tracking-tighter">{{ user.sport }}</span>
         </div>
         <p class="text-xs font-bold {{ color_class }} uppercase tracking-tighter">Status: {{ bmi_status }}</p>
-        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-blue-600/5 rounded-full"></div>
     </div>
 
-    <!-- 3. PROGRESS RING BOX -->
+    <!-- 3. DISCIPLINE PROGRESS RING -->
     <div class="bg-gray-800 rounded-[2rem] p-5 mb-6 border border-gray-700 shadow-xl flex items-center justify-between">
         <div class="flex items-center space-x-4">
             <div class="relative flex items-center justify-center">
                 <svg class="w-16 h-16 transform -rotate-90">
                     <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="5" fill="transparent" class="text-gray-700" />
                     <circle id="progress-ring" cx="32" cy="32" r="28" stroke="currentColor" stroke-width="5" fill="transparent" 
-                        stroke-dasharray="175.9" stroke-dashoffset="{{ 175.9 - (progress * 15) if (175.9 - (progress * 15)) > 0 else 0 }}" 
+                        stroke-dasharray="175.9" 
+                        stroke-dashoffset="{{ 175.9 - (progress * 15) if (175.9 - (progress * 15)) > 0 else 0 }}" 
                         class="text-green-500 transition-all duration-1000" />
                 </svg>
                 <span id="progress-count" class="absolute text-sm font-black">{{ progress }}</span>
             </div>
             <div>
                 <h3 class="font-black text-sm italic uppercase tracking-tighter">Discipline Score</h3>
-                <p class="text-gray-500 text-[10px] font-medium">{{ progress }} drills completed</p>
+                <p class="text-gray-500 text-[10px] font-medium">{{ progress }} drills logged</p>
             </div>
         </div>
         <button onclick="window.location.href='/history/{{ uid }}'" class="text-blue-500 font-black text-[10px] uppercase hover:underline">History</button>
@@ -59,49 +64,70 @@
         <p class="text-white text-sm italic font-serif leading-relaxed px-4">"{{ quote }}"</p>
     </div>
 
-    <!-- 5. AI WORKOUT BUTTON -->
+    <!-- 5. AI WORKOUT TRIGGER -->
     <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-[2.5rem] p-7 mb-8 shadow-2xl relative overflow-hidden active:scale-95 transition-all">
         <div class="relative z-10 text-center">
-            <h2 class="text-2xl font-black mb-6 italic">READY TO TRAIN?</h2>
-            <button onclick="fetchWorkouts()" class="bg-white text-blue-600 w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl">START AI SESSION</button>
+            <h2 class="text-2xl font-black mb-6 italic tracking-tight">READY TO TRAIN?</h2>
+            <!-- DITO ANG MAGIC BUTTON -->
+            <button onclick="fetchWorkouts()" class="bg-white text-blue-600 w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl">
+                START AI SESSION
+            </button>
         </div>
         <div class="absolute -right-5 -top-5 w-24 h-24 bg-white/10 rounded-full"></div>
     </div>
 
-    <!-- 6. WORKOUT CONTAINER -->
+    <!-- 6. WORKOUT LIST (Container for Drills) -->
     <div id="workout-container" class="space-y-4"></div>
 
     <!-- 7. BOTTOM NAV -->
     <div class="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-xl p-5 flex justify-around border-t border-gray-800 z-50">
-        <button onclick="window.location.href='/dashboard/{{ uid }}'" class="text-blue-500 font-black flex flex-col items-center text-[9px] tracking-widest"><span>🏠</span>HOME</button>
-        <button onclick="window.location.href='/history/{{ uid }}'" class="text-gray-500 font-black flex flex-col items-center text-[9px] tracking-widest"><span>🕒</span>HISTORY</button>
-        <button onclick="window.location.href='/profile_view/{{ uid }}'" class="text-gray-500 font-black flex flex-col items-center text-[9px] tracking-widest"><span>👤</span>PROFILE</button>
+        <button onclick="window.location.href='/dashboard/{{ uid }}'" class="text-blue-500 font-black flex flex-col items-center text-[9px] tracking-widest">
+            <span class="text-2xl mb-1">🏠</span>HOME
+        </button>
+        <button onclick="window.location.href='/history/{{ uid }}'" class="text-gray-500 font-black flex flex-col items-center text-[9px] tracking-widest">
+            <span class="text-2xl mb-1">🕒</span>HISTORY
+        </button>
+        <button onclick="window.location.href='/profile_view/{{ uid }}'" class="text-gray-500 font-black flex flex-col items-center text-[9px] tracking-widest">
+            <span class="text-2xl mb-1">👤</span>PROFILE
+        </button>
     </div>
 
+    <!-- --- JAVASCRIPT LOGIC --- -->
     <script>
+        // Persistence: Save UID when dashboard loads
+        const currentUID = "{{ uid }}";
+        if (currentUID && currentUID !== "None" && currentUID !== "") {
+            localStorage.setItem('intellifit_uid', currentUID);
+        }
+
+        // Logout function
+        function logout() {
+            if(confirm("Logout from IntelliFit?")) {
+                localStorage.removeItem('intellifit_uid');
+                window.location.href = "/login_page";
+            }
+        }
+
         let currentProgress = {{ progress }};
 
+        // Fetch AI Recommended Drills
         async function fetchWorkouts() {
             const container = document.getElementById('workout-container');
-            container.innerHTML = `<div class='text-center py-12'><p class='text-blue-400 animate-pulse font-black text-xs tracking-widest uppercase'>🤖 AI Analyzing your stats...</p></div>`;
+            container.innerHTML = `<div class='text-center py-12'><p class='text-blue-400 animate-pulse font-black text-xs tracking-widest'>🤖 AI IS SELECTING DRILLS</p></div>`;
 
             try {
-                const response = await fetch(`/get_recommendation/{{ uid }}`);
+                const response = await fetch(`/get_recommendation/${currentUID}`);
                 const drills = await response.json();
-                container.innerHTML = `<h3 class='text-[10px] font-black mb-4 text-gray-500 uppercase tracking-[0.3em]'>Personalized Drills</h3>`;
+                
+                container.innerHTML = `<h3 class='text-[10px] font-black mb-4 text-gray-500 uppercase tracking-[0.3em] font-bold'>Recommended for You</h3>`;
 
                 drills.forEach((drill, index) => {
-                    // DYNAMIC PROXY LOADING (Weserv + Unsplash)
-                    // Mas mabilis ito mag-load at hindi naba-block
                     const imageUrl = `https://images.weserv.nl/?url=https://images.unsplash.com/photo-${drill.image}&w=400&h=300&fit=cover`;
                     
                     container.innerHTML += `
-                        <div id="drill-card-${index}" class="bg-gray-800 p-6 rounded-[2rem] border-l-[6px] border-blue-500 shadow-xl mb-6 transform transition-all duration-500">
-                            <div class="w-full h-44 bg-gray-700 rounded-2xl mb-4 overflow-hidden border border-gray-600 shadow-inner">
-                                <img src="${imageUrl}" 
-                                     alt="${drill.name}" 
-                                     class="w-full h-full object-cover"
-                                     onerror="this.src='https://placehold.co/400x300/1f2937/3b82f6?text=Ready+to+Train'">
+                        <div id="drill-card-${index}" class="bg-gray-800 p-6 rounded-[2rem] border-l-[6px] border-blue-500 shadow-xl mb-6 transition-all duration-500">
+                            <div class="w-full h-44 bg-gray-700 rounded-2xl mb-4 overflow-hidden border border-gray-600">
+                                <img src="${imageUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/1f2937/3b82f6?text=Workout+Ready'">
                             </div>
                             <div class="flex justify-between items-start mb-2">
                                 <h4 class="font-black text-xl text-white italic uppercase tracking-tighter">${drill.name}</h4>
@@ -112,14 +138,18 @@
                         </div>
                     `;
                 });
-            } catch (err) { 
-                container.innerHTML = "<p class='text-red-500 text-xs text-center font-bold'>Connection Error. Check Termux.</p>";
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = "<p class='text-red-500 text-xs text-center font-bold uppercase'>Error loading AI drills.</p>";
             }
         }
 
+        // Mark workout as done
         async function markDone(drillName, index) {
             const btn = document.getElementById(`btn-${index}`);
             const card = document.getElementById(`drill-card-${index}`);
+            const originalText = btn.innerText;
+
             btn.innerText = "⏳ SAVING...";
             btn.disabled = true;
 
@@ -127,21 +157,30 @@
                 const response = await fetch('/log_workout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uid: "{{ uid }}", drill_name: drillName })
+                    body: JSON.stringify({ uid: currentUID, drill_name: drillName })
                 });
 
                 if (response.ok) {
                     setTimeout(() => {
                         btn.innerText = "✅ COMPLETED";
-                        btn.className = "w-full bg-green-700 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest cursor-not-allowed";
+                        btn.className = "w-full bg-green-700 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest cursor-not-allowed shadow-none";
                         card.classList.add("opacity-40", "scale-95");
+                        
+                        // Update score labels
                         currentProgress += 1;
                         document.getElementById('progress-count').innerText = currentProgress;
                         const newOffset = 175.9 - (currentProgress * 15);
                         document.getElementById('progress-ring').style.strokeDashoffset = newOffset < 0 ? 0 : newOffset;
                     }, 600);
+                } else {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
                 }
-            } catch (err) { alert("Network error."); }
+            } catch (err) {
+                alert("Network error. Is Termux running?");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         }
     </script>
 </body>
